@@ -230,10 +230,13 @@ static CargoManager *_storeKitManager = nil;
              ^(NSDictionary *receipt)
             {
                 // DLog(@"Transaction verified.");
-                [weakSelf completeTransaction:transaction];
+                //download content
+                if (![weakSelf startDownloads:transaction]) {
+                    [weakSelf completeTransaction:transaction];
+                }
             }
-                                                failure:
-             ^(NSError *error)
+             
+             failure:^(NSError *error)
             {
                 // DLog(@"Transaction vertification failed.");
                 [weakSelf transactionFailed:transaction];
@@ -243,10 +246,26 @@ static CargoManager *_storeKitManager = nil;
             [self transactionFailed:transaction];
             break;
         case SKPaymentTransactionStateRestored:
-            [self restoreTransaction:transaction];
+            if (![self startDownloads:transaction]) {
+                [self restoreTransaction:transaction];
+            }
         default:
             break;
     }    
+}
+
+-(BOOL) startDownloads:(SKPaymentTransaction *)transaction
+{
+    NSArray *downloads = nil;
+    
+    if([transaction respondsToSelector:@selector(downloads)])
+        downloads = transaction.downloads;
+    
+    if([downloads count] > 0) {
+        [[SKPaymentQueue defaultQueue] startDownloads:transaction.downloads];
+        return YES;
+    }
+    return NO;
 }
 
 - (void)completeTransaction:(SKPaymentTransaction *)transaction
@@ -255,6 +274,7 @@ static CargoManager *_storeKitManager = nil;
 
     [self recordTransaction:transaction];
     [self.contentDelegate provideContentForProductIdentifier:transaction.payment.productIdentifier];
+    
     
     // Remove the transaction from the payment queue
     [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
@@ -273,7 +293,7 @@ static CargoManager *_storeKitManager = nil;
 
 - (void)transactionFailed:(SKPaymentTransaction *)transaction
 {
-    // DLog(@"{ transaction.error: %@ }", transaction.error);
+    // NSLog(@"{ transaction.error: %@ }", transaction.error);
 
     if (transaction.error.code != SKErrorPaymentCancelled) {
         // Display a transaction error here
@@ -333,6 +353,10 @@ static CargoManager *_storeKitManager = nil;
     if ( [self.contentDelegate respondsToSelector:@selector(downloadUpdated:)] )
     {
         [self.contentDelegate downloadUpdated:download];
+    }
+    
+    if (download.downloadState == SKDownloadStateFinished) {
+        [self completeTransaction:download.transaction];
     }
 }
 

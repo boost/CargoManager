@@ -16,6 +16,8 @@ With *CargoManager* you only have to implement two protocols in your own classes
 
 Please note that before attempting to use `CargoManager` or `CargoBay` it is strongly recommended that you fully understand how StoreKit works. The [In-App Purchase Programming Guide](http://developer.apple.com/library/ios/#documentation/NetworkingInternet/Conceptual/StoreKitGuide/Introduction/Introduction.html) by Apple provides a concise and gentle introduction.
 
+This fork has the addition that it will start downloads if you have them in your in-app purchase, it also contants an extras folder with an implimentation of gamedata which by default will download your content and copy it to the documents directory and use the in-app identifier as a folder. It also will store purchases in the ios keychain by utilising (RMStore's) keychainpersistance classes
+
 ---
 
 In addition to the protocols, you will need to call these provided methods:
