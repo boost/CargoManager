@@ -62,6 +62,10 @@ which returns the product price formatted as a currency string in the user local
 
 	// This call sends a product request to CargoBay and caches the resulting products.
     [[CargoManager sharedManager] loadStore];
+    
+    #optional
+     _persistor = [[RMStoreKeychainPersistence alloc] init];
+    [GameData sharedData].transactionPersistor = _persistor;
 
     return YES;
 }
